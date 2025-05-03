@@ -16,6 +16,7 @@
       padding: 10px;
       min-height: 120px;
       position: relative;
+      overflow-y: auto;
     }
     .cell h4 {
       margin: 0 0 10px 0;
@@ -76,12 +77,20 @@
 </div>
 
 <div class="board" id="board">
-  <!-- Столики будут динамически заполняться -->
+  <div class="cell" id="table-1"><h4>Стол 1</h4></div>
+  <div class="cell" id="table-2"><h4>Стол 2</h4></div>
+  <div class="cell" id="table-3"><h4>Стол 3</h4></div>
+  <div class="cell" id="table-4"><h4>Стол 4</h4></div>
+  <div class="cell" id="table-5"><h4>Стол 5</h4></div>
+  <div class="cell" id="table-6"><h4>Стол 6</h4></div>
+  <div class="cell" id="table-7"><h4>Стол 7</h4></div>
+  <div class="cell" id="table-8"><h4>Стол 8</h4></div>
 </div>
 
 <script>
 // Считывание данных из LocalStorage при загрузке страницы
 window.onload = function() {
+  console.log("Page loaded, checking LocalStorage data...");
   loadDataFromLocalStorage();
 };
 
@@ -110,7 +119,10 @@ function addCard() {
   const hookah = document.getElementById('hookah').checked ? 'Кальян' : '';
   const vr = document.getElementById('vr').checked ? 'VR' : '';
   
-  if (!name || !phone || !table || !time || !guests) return;
+  if (!name || !phone || !table || !time || !guests) {
+    alert("Заполните все поля!");
+    return;
+  }
 
   // Сохраняем карточку в LocalStorage
   const cardData = { name, phone, time, table, guests, hookah, vr, status: 'Ожидается' };
@@ -136,7 +148,12 @@ function addCard() {
     <button onclick="toggleStatus(this.parentNode)">Статус</button>
   `;
 
-  document.querySelectorAll('.cell')[table - 1].appendChild(card);
+  const tableCell = document.querySelector(`#table-${table}`);
+  if (tableCell) {
+    tableCell.appendChild(card);
+  } else {
+    console.log('Ошибка: Стол не найден!');  // Для отладки
+  }
 }
 
 // Сохранение данных в LocalStorage
@@ -171,10 +188,11 @@ function loadDataFromLocalStorage() {
       <button onclick="toggleStatus(this.parentNode)">Статус</button>
     `;
 
-    // Динамически добавляем карточку в соответствующий стол
-    const tableCell = document.querySelectorAll('.cell')[data.table - 1];
+    const tableCell = document.querySelector(`#table-${data.table}`);
     if (tableCell) {
       tableCell.appendChild(card);
+    } else {
+      console.log('Ошибка: Стол не найден!');  // Для отладки
     }
   });
 }
