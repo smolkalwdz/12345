@@ -144,11 +144,13 @@ function saveDataToLocalStorage(cardData) {
   let existingData = JSON.parse(localStorage.getItem('bookings')) || [];
   existingData.push(cardData);
   localStorage.setItem('bookings', JSON.stringify(existingData));
+  console.log('Data saved to LocalStorage:', cardData);  // Для отладки
 }
 
 // Загрузка данных из LocalStorage
 function loadDataFromLocalStorage() {
   const storedData = JSON.parse(localStorage.getItem('bookings')) || [];
+  console.log('Loaded data from LocalStorage:', storedData);  // Для отладки
   storedData.forEach(data => {
     const card = document.createElement('div');
     card.className = 'card red';
@@ -187,6 +189,7 @@ function deleteCard(card) {
   let existingData = JSON.parse(localStorage.getItem('bookings')) || [];
   existingData = existingData.filter(data => data.name !== card.querySelector('strong').textContent);
   localStorage.setItem('bookings', JSON.stringify(existingData));
+  console.log('Data removed from LocalStorage:', card.querySelector('strong').textContent);  // Для отладки
   card.remove();
 }
 
@@ -213,6 +216,7 @@ function editCard(card) {
     return data;
   });
   localStorage.setItem('bookings', JSON.stringify(existingData));
+  console.log('Data updated in LocalStorage:', existingData);  // Для отладки
 }
 </script>
 
