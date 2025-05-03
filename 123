@@ -171,7 +171,11 @@ function loadDataFromLocalStorage() {
       <button onclick="toggleStatus(this.parentNode)">Статус</button>
     `;
 
-    document.querySelectorAll('.cell')[data.table - 1].appendChild(card);
+    // Динамически добавляем карточку в соответствующий стол
+    const tableCell = document.querySelectorAll('.cell')[data.table - 1];
+    if (tableCell) {
+      tableCell.appendChild(card);
+    }
   });
 }
 
