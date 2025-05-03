@@ -200,6 +200,19 @@ function editCard(card) {
   card.querySelector("br").nextSibling.textContent = "Телефон: " + phone;
   card.querySelector("br").nextSibling.nextSibling.textContent = "Время: " + time;
   card.querySelector("br").nextSibling.nextSibling.nextSibling.textContent = "Количество: " + guests;
+
+  // Сохранение изменений в LocalStorage
+  let existingData = JSON.parse(localStorage.getItem('bookings')) || [];
+  existingData = existingData.map(data => {
+    if (data.name === card.querySelector("strong").textContent) {
+      data.name = name;
+      data.phone = phone;
+      data.time = time;
+      data.guests = guests;
+    }
+    return data;
+  });
+  localStorage.setItem('bookings', JSON.stringify(existingData));
 }
 </script>
 
