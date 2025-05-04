@@ -2,244 +2,184 @@
 <html lang="ru">
 <head>
   <meta charset="UTF-8">
-  <title>Интерактивная Канбан-Доска</title>
+  <title>Канбан-доска броней (17 столов)</title>
   <style>
-    body { font-family: sans-serif; background: #f0f0f0; margin: 0; padding: 20px; }
-    .board {
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 10px;
-    }
-    .cell {
-      background: #fff;
-      border: 1px solid #ccc;
-      padding: 10px;
-      min-height: 120px;
-      position: relative;
-      overflow-y: auto;
-    }
-    .cell h4 {
-      margin: 0 0 10px 0;
-      font-size: 14px;
-    }
-    .card {
-      background: #ffeeba;
-      border-left: 5px solid red;
-      padding: 8px;
-      margin-bottom: 6px;
-      cursor: move;
-    }
-    .card.green { border-left-color: green; background: #d4edda; }
-    .card.red { border-left-color: red; background: #f8d7da; }
-    .controls {
-      margin-top: 20px;
-    }
-    input, select, button {
-      margin-right: 5px;
-      padding: 5px;
-    }
-    label {
-      font-size: 12px;
-    }
-    .card .edit-button, .card .delete-button {
-      font-size: 12px;
-      background: transparent;
-      border: none;
-      cursor: pointer;
-    }
-    .card .delete-button {
-      color: red;
-    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: sans-serif; background: #eef2f5; padding: 20px; line-height: 1.4; }
+    h2 { margin-bottom: 16px; color: #333; }
+    .controls { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 20px; }
+    .controls input, .controls select, .controls button { padding: 6px 10px; border: 1px solid #bbb; border-radius: 4px; background: #fff; }
+    .controls button { background: #4078c0; color: #fff; border-color: #305a8c; cursor: pointer; }
+    .controls button:hover { background: #305a8c; }
+    .clear-btn { background: #c0392b; border-color: #922b21; }
+    .clear-btn:hover { background: #922b21; }
+    .board { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 12px; }
+    .cell { background: #fff; border: 1px solid #dde2e8; border-radius: 6px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); display: flex; flex-direction: column; overflow: hidden; }
+    .cell-header { background: #4078c0; color: #fff; text-align: center; padding: 8px; font-weight: bold; font-size: 14px; }
+    .cell-body { flex: 1; padding: 8px; overflow-y: auto; }
+    .cell-footer { background: #f5f7fa; color: #555; text-align: center; padding: 6px; font-size: 13px; border-top: 1px solid #dde2e8; }
+    .card { background: #ffeeba; border-left: 6px solid #d39e00; border-radius: 4px; padding: 8px; margin-bottom: 8px; box-shadow: 0 1px 2px rgba(0,0,0,0.1); cursor: move; transition: transform .1s; font-size: 13px; }
+    .card:hover { transform: translateY(-2px); }
+    .green { background: #d4edda; border-left-color: #28a745 !important; }
+    .status-btn, .delete-btn { margin-top: 6px; background: transparent; border: none; color: #555; cursor: pointer; font-size: 12px; padding: 2px 4px; }
+    .delete-btn { color: #c0392b; }
   </style>
 </head>
 <body>
 
-<h2>Интерактивная Канбан-Доска Броней</h2>
+<h2>Канбан-доска броней (17 столов)</h2>
+
 <div class="controls">
   <input id="name" placeholder="Имя">
   <input id="phone" placeholder="Телефон">
-  <select id="table">
-    <option disabled selected>Стол</option>
-    <option value="1">1</option>
-    <option value="2">2</option>
-    <option value="3">3</option>
-    <option value="4">4</option>
-    <option value="5">5</option>
-    <option value="6">6</option>
-    <option value="7">7</option>
-    <option value="8">8</option>
+  <select id="table"><option disabled selected>Стол</option></select>
+  <input id="time" type="time">
+  <input id="guests" type="number" placeholder="Гостей">
+  <select id="source">
+    <option disabled selected>Источник</option>
+    <option value="Звонок">Звонок</option>
+    <option value="Лично">Лично</option>
+    <option value="Онлайн">Онлайн</option>
   </select>
-  <input id="time" type="time" placeholder="Время брони">
-  <input id="guests" type="number" placeholder="Количество человек">
   <label><input id="hookah" type="checkbox"> Кальян</label>
   <label><input id="vr" type="checkbox"> VR</label>
-  <button onclick="addCard()">Добавить бронь</button>
+  <button onclick="addCard()">Добавить</button>
+  <button class="clear-btn" onclick="clearAll()">Очистить все</button>
 </div>
 
-<div class="board" id="board">
-  <div class="cell" id="table-1"><h4>Стол 1</h4></div>
-  <div class="cell" id="table-2"><h4>Стол 2</h4></div>
-  <div class="cell" id="table-3"><h4>Стол 3</h4></div>
-  <div class="cell" id="table-4"><h4>Стол 4</h4></div>
-  <div class="cell" id="table-5"><h4>Стол 5</h4></div>
-  <div class="cell" id="table-6"><h4>Стол 6</h4></div>
-  <div class="cell" id="table-7"><h4>Стол 7</h4></div>
-  <div class="cell" id="table-8"><h4>Стол 8</h4></div>
-</div>
+<div class="board" id="board"></div>
 
-<script>
-// Считывание данных из LocalStorage при загрузке страницы
-window.onload = function() {
-  console.log("Page loaded, checking LocalStorage data...");
-  loadDataFromLocalStorage();
-};
+<script type="module">
+  import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.0.0/dist/esm/index.js';
 
-let cardId = 0;
+  // 1. Инициализация Supabase
+  const supabaseUrl = 'https://jkzgrmdwfdrddwpzqiuz.supabase.co';
+  const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpremdybWR3ZmRyZGR3cHpxaXV6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDYzMDg5ODIsImV4cCI6MjA2MTg4NDk4Mn0.pgGseeSNqlEZO1TItHM8BIWyEiATxyRDpo7XXMNAiIU';
+  const supabase = createClient(supabaseUrl, supabaseKey);
 
-function allowDrop(ev) {
-  ev.preventDefault();
-}
+  // 2. Построение доски
+  const tableSelect = document.getElementById('table');
+  const board = document.getElementById('board');
+  for (let i = 1; i <= 17; i++) {
+    const opt = document.createElement('option');
+    opt.value = i; opt.textContent = i;
+    tableSelect.append(opt);
 
-function drag(ev) {
-  ev.dataTransfer.setData("text", ev.target.id);
-}
+    let cap = i <= 8 ? '4–6 чел.' :
+              [9,12,16].includes(i) ? '4 чел.' :
+              [13,14].includes(i) ? '2 чел.' :
+              [10,11,15].includes(i) ? '8 чел.' : 'VIP 12+ чел.';
 
-function drop(ev) {
-  ev.preventDefault();
-  var data = ev.dataTransfer.getData("text");
-  ev.target.closest('.cell').appendChild(document.getElementById(data));
-}
-
-function addCard() {
-  const name = document.getElementById('name').value;
-  const phone = document.getElementById('phone').value;
-  const table = document.getElementById('table').value;
-  const time = document.getElementById('time').value;
-  const guests = document.getElementById('guests').value;
-  const hookah = document.getElementById('hookah').checked ? 'Кальян' : '';
-  const vr = document.getElementById('vr').checked ? 'VR' : '';
-  
-  if (!name || !phone || !table || !time || !guests) {
-    alert("Заполните все поля!");
-    return;
-  }
-
-  // Сохраняем карточку в LocalStorage
-  const cardData = { name, phone, time, table, guests, hookah, vr, status: 'Ожидается' };
-  saveDataToLocalStorage(cardData);
-
-  // Создание карточки
-  const card = document.createElement('div');
-  card.className = 'card red';
-  card.id = 'card' + cardId++;
-  card.draggable = true;
-  card.ondragstart = drag;
-
-  card.innerHTML = `
-    <strong>${name}</strong><br>
-    Телефон: ${phone}<br>
-    Время: ${time}<br>
-    Количество: ${guests}<br>
-    Стол: ${table}<br>
-    ${hookah ? `<span>🍹 ${hookah}</span><br>` : ''}
-    ${vr ? `<span>🎮 ${vr}</span><br>` : ''}
-    <button class="edit-button" onclick="editCard(this.parentNode)">Редактировать</button>
-    <button class="delete-button" onclick="deleteCard(this.parentNode)">Удалить</button>
-    <button onclick="toggleStatus(this.parentNode)">Статус</button>
-  `;
-
-  const tableCell = document.querySelector(`#table-${table}`);
-  if (tableCell) {
-    tableCell.appendChild(card);
-  } else {
-    console.log('Ошибка: Стол не найден!');  // Для отладки
-  }
-}
-
-// Сохранение данных в LocalStorage
-function saveDataToLocalStorage(cardData) {
-  let existingData = JSON.parse(localStorage.getItem('bookings')) || [];
-  existingData.push(cardData);
-  localStorage.setItem('bookings', JSON.stringify(existingData));
-  console.log('Data saved to LocalStorage:', cardData);  // Для отладки
-}
-
-// Загрузка данных из LocalStorage
-function loadDataFromLocalStorage() {
-  const storedData = JSON.parse(localStorage.getItem('bookings')) || [];
-  console.log('Loaded data from LocalStorage:', storedData);  // Для отладки
-  storedData.forEach(data => {
-    const card = document.createElement('div');
-    card.className = 'card red';
-    card.id = 'card' + cardId++;
-    card.draggable = true;
-    card.ondragstart = drag;
-
-    card.innerHTML = `
-      <strong>${data.name}</strong><br>
-      Телефон: ${data.phone}<br>
-      Время: ${data.time}<br>
-      Количество: ${data.guests}<br>
-      Стол: ${data.table}<br>
-      ${data.hookah ? `<span>🍹 ${data.hookah}</span><br>` : ''}
-      ${data.vr ? `<span>🎮 ${data.vr}</span><br>` : ''}
-      <button class="edit-button" onclick="editCard(this.parentNode)">Редактировать</button>
-      <button class="delete-button" onclick="deleteCard(this.parentNode)">Удалить</button>
-      <button onclick="toggleStatus(this.parentNode)">Статус</button>
+    const cell = document.createElement('div');
+    cell.className = 'cell';
+    cell.id = 'table-' + i;
+    cell.ondragover = e => e.preventDefault();
+    cell.ondrop = e => {
+      e.preventDefault();
+      const id = e.dataTransfer.getData('text');
+      document.querySelector(`#table-${i} .cell-body`).append(document.getElementById(id));
+      updateTaskTable(id, i);
+    };
+    cell.innerHTML = `
+      <div class="cell-header">Стол ${i}</div>
+      <div class="cell-body"></div>
+      <div class="cell-footer">${cap}</div>
     `;
-
-    const tableCell = document.querySelector(`#table-${data.table}`);
-    if (tableCell) {
-      tableCell.appendChild(card);
-    } else {
-      console.log('Ошибка: Стол не найден!');  // Для отладки
-    }
-  });
-}
-
-function toggleStatus(card) {
-  if (card.classList.contains('red')) {
-    card.classList.remove('red');
-    card.classList.add('green');
-  } else {
-    card.classList.remove('green');
-    card.classList.add('red');
+    board.append(cell);
   }
-}
 
-function deleteCard(card) {
-  let existingData = JSON.parse(localStorage.getItem('bookings')) || [];
-  existingData = existingData.filter(data => data.name !== card.querySelector('strong').textContent);
-  localStorage.setItem('bookings', JSON.stringify(existingData));
-  console.log('Data removed from LocalStorage:', card.querySelector('strong').textContent);  // Для отладки
-  card.remove();
-}
+  // Drag handler
+  function drag(ev) {
+    ev.dataTransfer.setData('text', ev.target.id);
+  }
 
-function editCard(card) {
-  const name = prompt("Имя", card.querySelector("strong").textContent);
-  const phone = prompt("Телефон", card.querySelector("br").nextSibling.textContent.split(":")[1]);
-  const time = prompt("Время", card.querySelector("br").nextSibling.nextSibling.textContent.split(":")[1]);
-  const guests = prompt("Количество человек", card.querySelector("br").nextSibling.nextSibling.nextSibling.textContent.split(":")[1]);
-  
-  card.querySelector("strong").textContent = name;
-  card.querySelector("br").nextSibling.textContent = "Телефон: " + phone;
-  card.querySelector("br").nextSibling.nextSibling.textContent = "Время: " + time;
-  card.querySelector("br").nextSibling.nextSibling.nextSibling.textContent = "Количество: " + guests;
+  // 3. Загрузка из Supabase
+  async function loadState() {
+    const { data, error } = await supabase.from('bookings').select('*');
+    if (error) return console.error(error);
+    document.querySelectorAll('.card').forEach(c => c.remove());
+    data.forEach(item => {
+      const cell = document.querySelector(`#table-${item.table_id} .cell-body`);
+      if (!cell) return;
+      const card = document.createElement('div');
+      card.id = 'card-' + item.id;
+      card.className = 'card ' + (item.status === 'done' ? 'green' : 'red');
+      card.draggable = true;
+      card.ondragstart = drag;
+      card.innerHTML = `
+        <strong>${item.name}</strong><br>
+        ${item.time} · ${item.guests} чел.<br>
+        тел. ${item.phone}<br>
+        src: ${item.source}${item.hookah ? '<br>🍹' : ''}${item.vr ? '<br>🎮' : ''}
+        <button class="status-btn" onclick="toggleStatus(${item.id})">Статус</button>
+        <button class="delete-btn" onclick="deleteCard(${item.id})">Удалить</button>
+      `;
+      cell.append(card);
+    });
+  }
 
-  // Сохранение изменений в LocalStorage
-  let existingData = JSON.parse(localStorage.getItem('bookings')) || [];
-  existingData = existingData.map(data => {
-    if (data.name === card.querySelector("strong").textContent) {
-      data.name = name;
-      data.phone = phone;
-      data.time = time;
-      data.guests = guests;
-    }
-    return data;
-  });
-  localStorage.setItem('bookings', JSON.stringify(existingData));
-  console.log('Data updated in LocalStorage:', existingData);  // Для отладки
-}
+  // 4. Добавление карточки
+  async function addCard() {
+    const name   = name.value.trim(),
+          phone  = phone.value.trim(),
+          table  = +tableSelect.value,
+          time   = time.value,
+          guests = +guests.value,
+          source = source.value,
+          hookah = hookah.checked,
+          vr     = vr.checked;
+    if (!name||!phone||!table||!time||!guests||!source) return;
+
+    const { error } = await supabase.from('bookings').insert([{
+      name, phone, table_id: table, time, guests, source,
+      hookah: hookah?'Кальян':'', vr: vr?'VR':'', status: 'to-do'
+    }]);
+    if (error) return console.error(error);
+    loadState();
+  }
+
+  // 5. Удаление карточки
+  async function deleteCard(id) {
+    const { error } = await supabase.from('bookings').delete().eq('id', id);
+    if (error) return console.error(error);
+    loadState();
+  }
+
+  // 6. Переключение статуса
+  async function toggleStatus(id) {
+    const { data:[row], error:err1 } = await supabase.from('bookings').select('status').eq('id', id);
+    if (err1) return console.error(err1);
+    const newStatus = row.status === 'to-do' ? 'done' : 'to-do';
+    const { error } = await supabase.from('bookings').update({ status: newStatus }).eq('id', id);
+    if (error) return console.error(error);
+    loadState();
+  }
+
+  // 7. Обновление столика при drop
+  async function updateTaskTable(elId, newTable) {
+    const id = +elId.split('-')[1];
+    const { error } = await supabase.from('bookings').update({ table_id: newTable }).eq('id', id);
+    if (error) console.error(error);
+  }
+
+  // 8. Очистка всех данных
+  async function clearAll() {
+    if (!confirm("Очистить все?")) return;
+    const { error } = await supabase.from('bookings').delete();
+    if (error) return console.error(error);
+    loadState();
+  }
+
+  // Экспорт в глобальный scope
+  window.drag = drag;
+  window.addCard = addCard;
+  window.deleteCard = deleteCard;
+  window.toggleStatus = toggleStatus;
+  window.clearAll = clearAll;
+  window.updateTaskTable = updateTaskTable;
+
+  // Запуск загрузки
+  window.onload = loadState;
 </script>
 
 </body>
